@@ -9,8 +9,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
+
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 @ExtendWith(AllureJunit5.class)
 public class OrderListTests {
@@ -39,7 +41,30 @@ public class OrderListTests {
     private void validateOrderListResponse(Response response) {
         response.then()
                 .statusCode(200)
-                .body("orders", notNullValue());
+                .body("orders", instanceOf(List.class))
+                .body("orders[0].id", greaterThan(0))
+                .body("orders[0].courierId", not(empty()))
+                .body("orders[0].firstName", not(emptyString()))
+                .body("orders[0].lastName", not(emptyString()))
+                .body("orders[0].address", not(emptyString()))
+                .body("orders[0].metroStation", not(emptyString()))
+                .body("orders[0].phone", not(emptyString()))
+                .body("orders[0].rentTime", greaterThan(0))
+                .body("orders[0].deliveryDate", not(emptyString()))
+                .body("orders[0].comment", not(emptyString()))
+                .body("orders[0].track", greaterThan(0))
+                .body("orders[0].createdAt", not(emptyString()))
+                .body("orders[0].updatedAt", not(emptyString()))
+                .body("orders[0].status", greaterThanOrEqualTo(0))
+                .body("pageInfo", not(emptyString()))
+                .body("pageInfo[0].page", greaterThanOrEqualTo(0))
+                .body("pageInfo[0].total", greaterThanOrEqualTo(0))
+                .body("pageInfo[0].limit", greaterThan(0))
+                .body("availableStations", instanceOf(List.class))
+                .body("availableStations[0].name", not(emptyString()))
+                .body("availableStations[0].number", not(emptyString()))
+                .body("availableStations[0].color", not(emptyString()));
     }
-}
+
+    }
 

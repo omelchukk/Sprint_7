@@ -13,7 +13,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @ExtendWith(AllureJunit5.class)
-public class LoginCourierTest {
+public class LoginCourierTests {
     private String login;
     private String password;
     private String firstName;
@@ -64,16 +64,27 @@ public class LoginCourierTest {
 
     @Test
     @DisplayName("Неправильные данные или несуществующий пользователь")
-    @Description("Создание курьера и затем попытка залогиниться с ошибкой в данных. В результате получиться несуществующий пользователь и авторизация не пройдет.")
     public void loginWithInvalidCredentials() {
-        createCourier("johnpork1", "1234", firstName);
-        CourierLogin courier = new CourierLogin("johnpork2", "12345");
-        Response wrongLogin = loginCourier(courier);
+        String validLogin = "johnpork_" + UUID.randomUUID();
+        String validPassword = "pass123";
+        createCourier(validLogin, validPassword, firstName);
+
+        // логинимся и сохраняем id
+        Response loginResponse = loginCourier(new CourierLogin(validLogin, validPassword));
+        int intId = loginResponse.path("id");
+        id = Integer.toString(intId);
+
+
+        // теперь тестируем неверную авторизацию
+        CourierLogin invalid = new CourierLogin(validLogin + "_wrong", validPassword + "wrong");
+        Response wrongLogin = loginCourier(invalid);
         validateErrorResponse(wrongLogin, 404, "Учетная запись не найдена");
     }
 
+
+
     @Step("Создание курьера {login}, {password}, {firstName}")
-    private void createCourier(String login, String password, String firstName) {
+    private Response createCourier(String login, String password, String firstName) {
         CourierCreate courier = new CourierCreate(login, password, firstName);
         Response response = given()
                 .header("Content-type", "application/json")
@@ -84,6 +95,8 @@ public class LoginCourierTest {
         response.then()
                 .statusCode(201)
                 .body("ok", equalTo(true));
+
+        return response;
     }
 
     @Step("Авторизация курьера")
@@ -100,7 +113,7 @@ public class LoginCourierTest {
     private void validateSuccessfulLogin(Response response) {
         response.then()
                 .statusCode(200)
-                .body("id", greaterThan(1));
+                .body("id", greaterThan(0));
 
         Object courierId = response.path("id");
         if (courierId != null) {

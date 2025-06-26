@@ -13,7 +13,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @ExtendWith(AllureJunit5.class)
-public class CreateCourierTest {
+public class CreateCourierTests {
     private String login;
     private String password;
     private String firstName;
